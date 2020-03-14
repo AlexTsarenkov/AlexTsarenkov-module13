@@ -18,8 +18,7 @@
 --- | ---
 express | npm i express --save-dev
 nodemon | npm i nodemon --save-dev
-eslint | npm i eslint-config-airbnb-base
-npm i eslint-plugin-import --save-dev
+eslint | npm i eslint-config-airbnb-base npm i eslint-plugin-import --save-dev
 
 ### Запуск
 Билд | Команда
