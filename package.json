@@ -1,0 +1,29 @@
+{
+  "name": "module13",
+  "version": "0.0.1",
+  "description": "module 13 homework",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexTsarenkov/AlexTsarenkov-module13.git"
+  },
+  "author": "Aleksey Tsarenkov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexTsarenkov/AlexTsarenkov-module13/issues"
+  },
+  "homepage": "https://github.com/AlexTsarenkov/AlexTsarenkov-module13#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "nodemon": "^2.0.2"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
