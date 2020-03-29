@@ -16,9 +16,12 @@ const postCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
-    .orFail(() => res.status(404).send({ error: 'card does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: `Server cannot delete card: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
+      else res.status(500).send({ message: `Server cannot delete card: ${err}` });
+    });
 };
 
 const addLikeToCard = (req, res) => {
@@ -29,9 +32,12 @@ const addLikeToCard = (req, res) => {
     { $addToSet: { likes: user._id } },
     { new: true },
   )
-    .orFail(() => res.status(404).send({ error: 'card does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: `Server cannot update card likes: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
+      else res.status(500).send({ message: `Server cannot update card likes: ${err}` });
+    });
 };
 
 const removeLikeFromCard = (req, res) => {
@@ -41,9 +47,12 @@ const removeLikeFromCard = (req, res) => {
     { $pull: { likes: user._id } },
     { new: true },
   )
-    .orFail(() => res.status(404).send({ error: 'card does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: `Server cannot update card likes: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
+      else res.status(500).send({ message: `Server cannot update card likes: ${err}` });
+    });
 };
 
 module.exports = {

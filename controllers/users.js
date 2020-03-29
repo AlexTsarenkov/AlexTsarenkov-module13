@@ -8,9 +8,12 @@ const getUsers = (req, res) => {
 
 const getUserById = (req, res) => {
   User.findById(req.params.id)
-    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((user) => res.send(user))
-    .catch((err) => res.status(500).send({ message: `Server cannot resolve query: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
+      else res.status(500).send({ message: `Server cannot resolve query: ${err}` });
+    });
 };
 
 const postNewUser = (req, res) => {
@@ -25,18 +28,24 @@ const patchUserInfo = (req, res) => {
   const { name, about, user } = req.body;
 
   User.findByIdAndUpdate(user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((me) => res.send(me))
-    .catch((err) => res.status(500).send({ message: `Server cannot update user info: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
+      else res.status(500).send({ message: `Server cannot update user bio: ${err}` });
+    });
 };
 
 const patchUserAvatar = (req, res) => {
   const { avatar, user } = req.body;
 
   User.findByIdAndUpdate(user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
+    .orFail(() => new Error('Not Found'))
     .then((me) => res.send(me))
-    .catch((err) => res.status(500).send({ message: `Server cannot update user avatar: ${err}` }));
+    .catch((err) => {
+      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
+      else res.status(500).send({ message: `Server cannot update user avatar: ${err}` });
+    });
 };
 
 module.exports = {
