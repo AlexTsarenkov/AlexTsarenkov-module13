@@ -1,37 +1,44 @@
 const User = require('../model/user');
 
-module.exports.getUsers = (req, res) => {
+const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
     .catch((err) => res.status(500).send({ message: `Server cannot resolve query: ${err}` }));
 };
 
-module.exports.getUserById = (req, res) => {
+const getUserById = (req, res) => {
   User.findById(req.params.id)
+    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
     .then((user) => res.send(user))
     .catch((err) => res.status(500).send({ message: `Server cannot resolve query: ${err}` }));
 };
 
-module.exports.postNewUser = (req, res) => {
+const postNewUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+    .then((user) => res.status(201).send(user))
     .catch((err) => res.status(500).send({ message: `Server cannot post new user: ${err}` }));
 };
 
-module.exports.patchUserInfo = (req, res) => {
+const patchUserInfo = (req, res) => {
   const { name, about, user } = req.body;
 
-  User.findByIdAndUpdate(user._id, { name, about })
+  User.findByIdAndUpdate(user._id, { name, about }, { new: true, runValidators: true })
+    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
     .then((me) => res.send(me))
     .catch((err) => res.status(500).send({ message: `Server cannot update user info: ${err}` }));
 };
 
-module.exports.patchUserAvatar = (req, res) => {
+const patchUserAvatar = (req, res) => {
   const { avatar, user } = req.body;
 
-  User.findByIdAndUpdate(user._id, { avatar })
+  User.findByIdAndUpdate(user._id, { avatar }, { new: true, runValidators: true })
+    .orFail(() => res.status(404).send({ error: 'user does not exist' }))
     .then((me) => res.send(me))
     .catch((err) => res.status(500).send({ message: `Server cannot update user avatar: ${err}` }));
+};
+
+module.exports = {
+  getUsers, getUserById, postNewUser, patchUserInfo, patchUserAvatar,
 };

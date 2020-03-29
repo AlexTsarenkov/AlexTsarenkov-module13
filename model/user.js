@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { linkValidator } = require('../controllers/validators.js');
+const { linkValidator } = require('../validators/validators.js');
 
 const userSchema = new mongoose.Schema({
   name: {

@@ -19,7 +19,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.body.user = {
-    _id: '5e7f400f35b55420050499b3',
+    _id: '5e80486c03e0ba2ac67908a1',
   };
   next();
 });
@@ -29,6 +29,4 @@ app.use('/cards', cardsRoute);
 app.all('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
-app.listen(PORT, () => {
-
-});
+app.listen(PORT);
