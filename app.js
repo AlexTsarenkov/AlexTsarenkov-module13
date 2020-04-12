@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
@@ -9,8 +11,6 @@ const app = express();
 const { userRoute, loginRoute } = require('./routes/users');
 const cardsRoute = require('./routes/cards');
 const { auth } = require('./middlewares/auth.js');
-
-require('dotenv').config();
 
 app.use(cookieParser());
 app.use(bodyParser.json());
