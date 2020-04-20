@@ -1,5 +1,6 @@
 /* eslint-disable consistent-return */
 const jwt = require('jsonwebtoken');
+const { UnathorizedError } = require('../errors/errors.js');
 
 const { JWT_SECRET } = process.env || 'devsecretkey';
 
@@ -10,9 +11,8 @@ const auth = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res.status(401).send({ message: 'Auth require' });
+    next(new UnathorizedError('Authorization require'));
   }
-
   req.user = payload;
   next();
 };

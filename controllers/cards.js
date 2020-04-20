@@ -1,61 +1,54 @@
 const Card = require('../model/card');
+const {
+  ForbiddenError, NotFoundError,
+} = require('../errors/errors');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: `Server cannot resolve query: ${err}` }));
+    .catch(next);
 };
 
-const postCard = (req, res) => {
+const postCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: `Server cannot create card: ${err}` }));
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findById(req.params.id)
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('card not found'))
     .then((card) => {
       if (!card.owner.equals(req.user._id)) {
-        return Promise.reject(new Error('Forbidden'));
+        return Promise.reject(new ForbiddenError('Forbidden action'));
       }
       return Card.findByIdAndRemove(req.params.id);
     })
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
-      else if (err.message === 'Forbidden') res.status(403).send({ error: 'Forbidden' });
-      else res.status(500).send({ message: `Server cannot delete card: ${err}` });
-    });
+    .catch(next);
 };
 
-const addLikeToCard = (req, res) => {
+const addLikeToCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('card not found'))
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
-      else res.status(500).send({ message: `Server cannot update card likes: ${err}` });
-    });
+    .catch(next);
 };
 
-const removeLikeFromCard = (req, res) => {
+const removeLikeFromCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('card not found'))
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
-      else res.status(500).send({ message: `Server cannot update card likes: ${err}` });
-    });
+    .catch(next);
 };
 
 module.exports = {
