@@ -7,29 +7,33 @@ const getCards = (req, res) => {
 };
 
 const postCard = (req, res) => {
-  const { name, link, user } = req.body;
-
-  Card.create({ name, link, owner: user._id })
+  const { name, link } = req.body;
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
     .catch((err) => res.status(500).send({ message: `Server cannot create card: ${err}` }));
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+  Card.findById(req.params.id)
     .orFail(() => new Error('Not Found'))
+    .then((card) => {
+      if (!card.owner.equals(req.user._id)) {
+        return Promise.reject(new Error('Forbidden'));
+      }
+      return Card.findByIdAndRemove(req.params.id);
+    })
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.message === 'Not Found') res.status(404).send({ error: 'card does not exist' });
+      else if (err.message === 'Forbidden') res.status(403).send({ error: 'Forbidden' });
       else res.status(500).send({ message: `Server cannot delete card: ${err}` });
     });
 };
 
 const addLikeToCard = (req, res) => {
-  const { user } = req.body;
-
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: user._id } },
+    { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .orFail(() => new Error('Not Found'))
@@ -41,10 +45,9 @@ const addLikeToCard = (req, res) => {
 };
 
 const removeLikeFromCard = (req, res) => {
-  const { user } = req.body;
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: user._id } },
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .orFail(() => new Error('Not Found'))
