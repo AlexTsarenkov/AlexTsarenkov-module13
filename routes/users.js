@@ -9,10 +9,11 @@ const {
   patchUserInfoValidator,
   patchUserAvatarValidator,
   loginValidator,
+  idValidator,
 } = require('../validators/validators.js');
 
 userRoute.get('/', getUsers);
-userRoute.get('/:id', getUserById);
+userRoute.get('/:id', celebrate(idValidator), getUserById);
 userRoute.patch('/me', celebrate(patchUserInfoValidator), patchUserInfo);
 userRoute.patch('/me/avatar', celebrate(patchUserAvatarValidator), patchUserAvatar);
 

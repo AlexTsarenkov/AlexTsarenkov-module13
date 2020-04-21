@@ -16,7 +16,7 @@ const postUserValidator = {
     password: Joi.string().required(),
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().pattern(urlRegExp).required,
+    avatar: Joi.string().pattern(urlRegExp).required(),
   }),
 };
 
@@ -29,7 +29,7 @@ const patchUserInfoValidator = {
 
 const patchUserAvatarValidator = {
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(urlRegExp).required,
+    avatar: Joi.string().pattern(urlRegExp).required(),
   }),
 };
 
@@ -37,6 +37,12 @@ const loginValidator = {
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
+  }),
+};
+
+const idValidator = {
+  params: Joi.object().keys({
+    id: Joi.string().required().length(24),
   }),
 };
 
@@ -50,4 +56,5 @@ module.exports = {
   patchUserInfoValidator,
   patchUserAvatarValidator,
   loginValidator,
+  idValidator,
 };

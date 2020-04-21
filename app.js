@@ -15,7 +15,6 @@ const { auth } = require('./middlewares/auth.js');
 const { error } = require('./middlewares/error.js');
 const { requestLogger, errorLogger } = require('./middlewares/logger.js');
 
-
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

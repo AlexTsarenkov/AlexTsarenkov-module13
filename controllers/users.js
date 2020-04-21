@@ -2,9 +2,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
-const { NotFoundError } = require('../errors/errors');
+const { NotFoundError, ConflictError } = require('../errors/errors');
 
-const { JWT_SECRET } = process.env || 'devsecretkey';
+let JWT_SECRET;
+
+if (process.env.NODE_ENV === 'production'){
+  JWT_SECRET = process.env.JWT_SECRET;
+} else {
+  JWT_SECRET = 'supersecretdevkey';
+}
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -28,19 +34,26 @@ const postNewUser = (req, res, next) => {
     avatar,
   } = req.body;
 
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      email,
-      password: hash,
-      name,
-      about,
-      avatar,
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        throw new ConflictError(`User with ${email} email already exist`);
+      }
+
+      bcrypt.hash(password, 10)
+        .then((hash) => User.create({
+          email,
+          password: hash,
+          name,
+          about,
+          avatar,
+        }))
+        .then((createdUser) => {
+          createdUser.password = undefined;
+          res.status(201).send(createdUser);
+        });
     })
-      .then((user) => {
-        user.password = undefined;
-        res.status(201).send(user);
-      })
-      .catch(next));
+    .catch(next);
 };
 
 const patchUserInfo = (req, res, next) => {
