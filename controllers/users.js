@@ -6,7 +6,7 @@ const { NotFoundError, ConflictError } = require('../errors/errors');
 
 let JWT_SECRET;
 
-if (process.env.NODE_ENV === 'production'){
+if (process.env.NODE_ENV === 'production') {
   JWT_SECRET = process.env.JWT_SECRET;
 } else {
   JWT_SECRET = 'supersecretdevkey';
