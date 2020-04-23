@@ -1,6 +1,9 @@
 # AlexTsarenkov.github.io
 ## Yandex Praktikum module 13 homework
 -----
+## IP и Домен
+[84.201.135.199]
+[alekseytsarenkov.com]
 ## О проекте. 
 Данный проект является домашней работой по курсу web разработки Яндекс.Практикума.
 ## Функционал. 

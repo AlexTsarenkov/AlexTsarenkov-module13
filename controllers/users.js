@@ -2,26 +2,30 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
+const { NotFoundError, ConflictError } = require('../errors/errors');
 
-const { JWT_SECRET } = process.env || 'devsecretkey';
+let JWT_SECRET;
 
-const getUsers = (req, res) => {
+if (process.env.NODE_ENV === 'production') {
+  JWT_SECRET = process.env.JWT_SECRET;
+} else {
+  JWT_SECRET = 'supersecretdevkey';
+}
+
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => res.status(500).send({ message: `Server cannot resolve query: ${err}` }));
+    .catch(next);
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('user not found'))
     .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
-      else res.status(500).send({ message: `Server cannot resolve query: ${err}` });
-    });
+    .catch(next);
 };
 
-const postNewUser = (req, res) => {
+const postNewUser = (req, res, next) => {
   const {
     email,
     password,
@@ -30,62 +34,61 @@ const postNewUser = (req, res) => {
     avatar,
   } = req.body;
 
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      email,
-      password: hash,
-      name,
-      about,
-      avatar,
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        throw new ConflictError(`User with ${email} email already exist`);
+      }
+
+      bcrypt.hash(password, 10)
+        .then((hash) => User.create({
+          email,
+          password: hash,
+          name,
+          about,
+          avatar,
+        }))
+        .then((createdUser) => {
+          createdUser.password = undefined;
+          res.status(201).send(createdUser);
+        });
     })
-      .then((user) => {
-        user.password = undefined;
-        res.status(201).send(user);
-      })
-      .catch((err) => {
-        if (err.message === 'Already exist') res.status(40).send({ error: 'user does not exist' });
-        else res.status(500).send({ message: `Server cannot post user ${err}` });
-      }));
+    .catch(next);
 };
 
-const patchUserInfo = (req, res) => {
+const patchUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('user not found'))
     .then((me) => res.send(me))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
-      else res.status(500).send({ message: `Server cannot update user bio: ${err}` });
-    });
+    .catch(next);
 };
 
-const patchUserAvatar = (req, res) => {
+const patchUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(() => new Error('Not Found'))
+    .orFail(() => new NotFoundError('user not found'))
     .then((me) => res.send(me))
-    .catch((err) => {
-      if (err.message === 'Not Found') res.status(404).send({ error: 'user does not exist' });
-      else res.status(500).send({ message: `Server cannot update user avatar: ${err}` });
-    });
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new NotFoundError('user not found');
+      }
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 604800000,
         httpOnly: true,
       }).status(200).send({ message: 'success' });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
 
 
